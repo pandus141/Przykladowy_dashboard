@@ -5,7 +5,7 @@ st.title("Dashboard Sprzedaży")
 st.caption("Dashboard  KPI z filtrem dat, produktów i płci")
 
 #WCZYTANIE DANYCH
-df = pd.read_csv(".data/sales.csv", parse_dates=["data"])
+df = pd.read_csv("sales.csv", parse_dates=["data"])
 df["przychod"]=df["ilosc"]*df["cena"]
 
 #FILTR DAT
@@ -118,3 +118,4 @@ st.metric(
     "Udział najlepszego produktu w przychodzie",
     f"{udzial:.1f}%"
 )
+
