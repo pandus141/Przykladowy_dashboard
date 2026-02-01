@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-streamlit.set_page_config(
+st.set_page_config(
     page_title="Dashboard sprzedaży",
     page_icon="📊",
     layout="wide"
@@ -124,5 +124,6 @@ st.metric(
     "Udział najlepszego produktu w przychodzie",
     f"{udzial:.1f}%"
 )
+
 
 
