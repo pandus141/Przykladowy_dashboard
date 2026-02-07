@@ -14,37 +14,63 @@ st.caption("Dashboard  KPI z filtrem dat, produktów i płci")
 df = pd.read_csv("sales.csv", parse_dates=["data"])
 df["przychod"]=df["ilosc"]*df["cena"]
 
-#FILTR DAT
-min_data=df["data"].min().date()
-max_data=df["data"].max().date()
+#FILTR DATY
+with st.sidebar:
+    st.header("Filtry")
 
-zakres_dat = st.date_input(
-    "Zakres dat",
-    value=(min_data, max_data),
-    min_value=min_data,
-    max_value=max_data
-)
-start_data, end_data = zakres_dat
+    min_date = df["data"].min().date()
+    max_date = df["data"].max().date()
 
-df_filtered = df[(df["data"].dt.date>=start_data)&(df["data"].dt.date<=end_data)]
+    st.subheader("Czas")
 
-#FILTR PRODUKTÓW
-produkty = df_filtered["produkt"].unique()
-wybrane_produkty = st.multiselect(
-    "Wybierz produkty",
-    options = produkty,
-    default = produkty
-)
-df_filtered = df_filtered[df_filtered["produkt"].isin(wybrane_produkty)]
+    sidebar_start, sidebar_end = st.date_input(
+        "Zakres dat",
+        value=(min_date, max_date),
+        min_value = min_date,
+        max_value = max_date
+    )
+
+df_filtered = df[(df["data"].dt.date>=sidebar_start)&(df["data"].dt.date<=sidebar_end)]
+
+if df_filtered.empty:
+    st.warning("Brak danych dla wybranych filtrów")
+    st.stop()
 
 #FILTR PŁCI
-sex = df_filtered["plec"].unique()
-wybrana_plec = st.multiselect(
-    "Wybierz płeć",
-    options = sex,
-    default = sex
-)
-df_filtered = df_filtered[df_filtered["plec"].isin(wybrana_plec)]
+with st.sidebar:
+
+    st.subheader("Segment")
+
+    plec_options = sorted(df["plec"].dropna().unique())
+    selected_plec = st.multiselect(
+        "Płeć",
+        options = plec_options,
+        default = plec_options
+    )
+
+df_filtered = df_filtered[df_filtered["plec"].isin(selected_plec)]
+if df_filtered.empty:
+    st.warning("Brak danych dla wybranych filtrów")
+    st.stop()
+
+#FILTR PRODUKTÓW
+with st.sidebar:
+
+    st.subheader("Asortyment")
+
+    produkt_options = sorted(df_filtered["produkt"].unique())
+    selected_produkty = st.multiselect(
+        'Produkty',
+        options=produkt_options,
+        default=produkt_options
+    )
+df_filtered = df_filtered[df_filtered["produkt"].isin(selected_produkty)]
+if df_filtered.empty:
+    st.warning("Brak danych dla wybranych filtrów")
+    st.stop()
+
+with st.sidebar:
+    st.caption("Dane demonstracyjne")
 
 #KPI
 kpi = (
@@ -61,10 +87,10 @@ kpi = (
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Łączna sprzedaż (szt.)", kpi["total_ilosc"].sum())
+    st.metric("Łączny przychód", f"{kpi['total_przychod'].sum():,.0f} zł")
 
 with col2:
-    st.metric("Łączny przychód", f"{kpi['total_przychod'].sum():,.0f} zł")
+    st.metric("Łączna sprzedaż (szt.)", kpi["total_ilosc"].sum())
 
 with col3:
     st.metric("Liczba produktów", kpi["produkt"].nunique())
@@ -124,6 +150,3 @@ st.metric(
     "Udział najlepszego produktu w przychodzie",
     f"{udzial:.1f}%"
 )
-
-
-
